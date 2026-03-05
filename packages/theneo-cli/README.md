@@ -111,6 +111,8 @@ Options:
   --postman-api-key <postman-api-key>        Postman API Key (env: THENEO_POSTMAN_API_KEY)
   --postman-collection <postman-collection>  Postman collection id, you can use multiple times
   --import-type <import-type>                Indicates how should the new api spec be imported (choices: "endpoints", "overwrite", "append", "merge")
+  --generate-description <generate-description>  AI description generation mode (choices: "fill", "overwrite", "no_generation", default: "no_generation")
+                                             Note: requires --import-type overwrite
   --publish                                  Automatically publish the project (default: false)
   --workspace <workspace-slug>               Workspace slug, where the project is located
   --projectVersion <version-slug>            Project version slug to import to, if not provided then default version will be used
@@ -141,6 +143,34 @@ theneo project import --project <project-slug> \
 --keepOldParameterDescription \
 --keepOldSectionDescription
 ```
+
+#### Example import with AI description generation
+
+```bash
+# Fill empty descriptions with AI
+theneo project import --project <project-slug> \
+--file ./api-spec.json \
+--import-type overwrite \
+--generate-description fill \
+--publish
+
+# Regenerate all descriptions with AI
+theneo project import --project <project-slug> \
+--file ./api-spec.json \
+--import-type overwrite \
+--generate-description overwrite \
+--publish
+```
+
+##### AI Description Generation Modes
+
+| Mode | What it does |
+|------|-------------|
+| `fill` | Generate AI descriptions only for empty parameters |
+| `overwrite` | Regenerate all descriptions with AI |
+| `no_generation` | No AI processing (default, current behavior) |
+
+**Note:** AI description generation is only available when `--import-type overwrite` is used. Attempting to use `--generate-description` with other import types will result in an error.
 
 ### Publish document
 

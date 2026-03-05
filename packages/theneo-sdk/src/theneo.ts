@@ -175,19 +175,58 @@ export class Theneo {
 
   /**
    * Imports API document to existing project
+   * If AI description generation is requested and publish is true,
+   * then it waits for description generation before publishing
    * @param options
    */
-  public importProjectDocument(
+  public async importProjectDocument(
     options: ImportProjectOptions
-  ): Promise<Result<ImportResponse>> | Result<never> {
+  ): Promise<Result<ImportResponse>> {
+    let result: Result<ImportResponse>;
+
     if (options.data.directory) {
-      return importProjectFromDirectory(
+      result = await importProjectFromDirectory(
         this.baseApiUrl,
         this.getHeaders(),
         options
       );
+    } else {
+      result = await importProject(this.baseApiUrl, this.getHeaders(), options);
     }
-    return importProject(this.baseApiUrl, this.getHeaders(), options);
+
+    // Wait for AI description generation if requested
+    if (
+      result.ok &&
+      (options.descriptionGenerationType === DescriptionGenerationType.FILl ||
+        options.descriptionGenerationType ===
+          DescriptionGenerationType.OVERWRITE)
+    ) {
+      const generationResult = await this.waitForDescriptionGeneration(
+        options.projectId,
+        options.progressUpdateHandler
+      );
+
+      if (generationResult.err) {
+        return Err(generationResult.error);
+      }
+
+      // If publish is requested, publish after AI generation completes
+      if (options.publish) {
+        const publishResult = await this.publishProject(
+          options.projectId,
+          options.versionId
+        );
+        if (publishResult.ok) {
+          const importResponse: ImportResponse = {
+            ...result.value,
+            publishData: publishResult.value,
+          };
+          return Ok(importResponse);
+        }
+      }
+    }
+
+    return result;
   }
 
   public async exportProject(
@@ -329,6 +368,7 @@ export class Theneo {
     maxWaitTime = 600_000
   ): Promise<Result<never>> {
     const startTime = Date.now();
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const generateDescriptionsResult =
         await this.getDescriptionGenerationStatus(projectId);

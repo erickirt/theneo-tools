@@ -243,6 +243,23 @@ export interface ImportProjectOptions {
    * When provided, restricts the import to the specified tab
    */
   tabSlug?: string;
+
+  /**
+   * Used to generate descriptions using AI
+   * Specify `fill` if you want to generate description for params that does not have descriptions already.
+   * Specify `overwrite` if you want to overwrite descriptions for params that does not have descriptions already.
+   * Specify `no_generation` if you want to not generate descriptions for params that does not have descriptions already.
+   *
+   * Only applicable when importOption is "overwrite"
+   * @default no_generation
+   */
+  descriptionGenerationType?: DescriptionGenerationType;
+
+  /**
+   * Callback function that is called when description generation progress is received
+   * Only used if descriptionGenerationType is set to "fill" or "overwrite"
+   */
+  progressUpdateHandler?: DescriptionGenerationProgressHandler;
 }
 
 export enum MergingStrategy {

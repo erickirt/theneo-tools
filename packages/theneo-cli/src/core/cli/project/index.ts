@@ -36,6 +36,7 @@ export interface ImportCommandOptions {
   keepOldParameterDescription: boolean | undefined;
   keepOldSectionDescription: boolean | undefined;
   tab: string | undefined;
+  generateDescription: DescriptionGenerationType | undefined;
 }
 
 export interface ChosenInputType {

@@ -24,6 +24,7 @@ export interface ImportProjectInput extends ImportProjectBaseInput {
   importOptionAdditionalData?: ImportOptionAdditionalData | undefined;
   publish: boolean;
   importMetadata?: ImportMetadata | undefined;
+  descriptionGenerationType?: DescriptionGenerationType;
 }
 
 export interface ImportProjectFromDirectoryInput
@@ -34,6 +35,7 @@ export interface ImportProjectFromDirectoryInput
   importOption?: ImportOption | undefined;
   importOptionAdditionalData?: ImportOptionAdditionalData | undefined;
   importMetadata?: ImportMetadata | undefined;
+  descriptionGenerationType?: DescriptionGenerationType;
 }
 
 export type FileInfo = {

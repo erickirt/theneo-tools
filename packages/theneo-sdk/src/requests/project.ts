@@ -98,6 +98,13 @@ export function callImportProjectApi(
   const bodyFormData = new FormData();
   bodyFormData.append('publish', JSON.stringify(options.publish));
 
+  if (options.descriptionGenerationType) {
+    bodyFormData.append(
+      'descriptionGenerationType',
+      options.descriptionGenerationType
+    );
+  }
+
   // TODO validate
   if (options.postmanCollections) {
     bodyFormData.append(
@@ -210,6 +217,14 @@ export function callImportProjectFromDirectoryApi(
 
   const bodyFormData = new FormData();
   bodyFormData.append('publish', JSON.stringify(options.publish));
+
+  if (options.descriptionGenerationType) {
+    bodyFormData.append(
+      'descriptionGenerationType',
+      options.descriptionGenerationType
+    );
+  }
+
   bodyFormData.append('filePathSeparator', options.filePathSeparator);
 
   if (options.importOption) {

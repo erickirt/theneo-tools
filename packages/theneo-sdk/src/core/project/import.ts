@@ -85,6 +85,7 @@ export function importProject(
   importInput.importOption = options.importOption;
   importInput.importMetadata = options.importMetadata;
   importInput.tabSlug = options.tabSlug;
+  importInput.descriptionGenerationType = options.descriptionGenerationType;
 
   if (options.importOption == ImportOption.MERGE) {
     importInput.importOptionAdditionalData = options.importOptionAdditionalData;
