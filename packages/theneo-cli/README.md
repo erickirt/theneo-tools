@@ -110,14 +110,15 @@ Options:
   --link <link>                              API file URL to create project using it
   --postman-api-key <postman-api-key>        Postman API Key (env: THENEO_POSTMAN_API_KEY)
   --postman-collection <postman-collection>  Postman collection id, you can use multiple times
-  --import-type <import-type>                Indicates how should the new api spec be imported (choices: "endpoints", "overwrite", "append", "merge")
+  --import-type <import-type>                How to import the spec (choices: "endpoints", "overwrite", "append", "merge", "merge_v2")
+  --description-merge-strategy <strategy>    For merge_v2: keep_new or keep_old (default: keep_new)
   --generate-description <generate-description>  AI description generation mode (choices: "fill", "overwrite", "no_generation", default: "no_generation")
                                              Note: requires --import-type overwrite
   --publish                                  Automatically publish the project (default: false)
   --workspace <workspace-slug>               Workspace slug, where the project is located
   --projectVersion <version-slug>            Project version slug to import to, if not provided then default version will be used
-  --keepOldParameterDescription              Additional flag during merging import option, it will keep old parameter descriptions
-  --keepOldSectionDescription                Additional flag during merging import option, it will keep old section descriptions
+  --keepOldParameterDescription              For merge: keep existing parameter descriptions
+  --keepOldSectionDescription                For merge: keep existing section descriptions
   --profile <string>                         Use a specific profile from your config file.
   -h, --help                                 display help for command
 ```
@@ -142,6 +143,13 @@ theneo project import --project <project-slug> \
 --import-type merge \
 --keepOldParameterDescription \
 --keepOldSectionDescription
+```
+
+#### Example import with merge_v2 (smart merge)
+
+```bash
+theneo project import --project <project-slug> --file openapi.yaml --import-type merge_v2
+theneo project import --project <project-slug> --file openapi.yaml --import-type merge_v2 --description-merge-strategy keep_old
 ```
 
 #### Example import with AI description generation

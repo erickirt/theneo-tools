@@ -210,6 +210,8 @@ export enum ImportOption {
   OVERWRITE = 'overwrite',
   APPEND = 'append',
   MERGE = 'merge',
+  /** Smart merge: only updates sections where the API contract changed (fingerprint-based). */
+  MERGE_V2 = 'merge_v2',
 }
 
 export interface ImportMetadata {

@@ -36,8 +36,13 @@ export interface ImportCommandOptions {
   keepOldParameterDescription: boolean | undefined;
   keepOldSectionDescription: boolean | undefined;
   tab: string | undefined;
+  descriptionMergeStrategy: DescriptionMergeStrategy | undefined;
   generateDescription: DescriptionGenerationType | undefined;
 }
+
+export const DESCRIPTION_MERGE_STRATEGIES = ['keep_new', 'keep_old'] as const;
+export type DescriptionMergeStrategy =
+  (typeof DESCRIPTION_MERGE_STRATEGIES)[number];
 
 export interface ChosenInputType {
   file?: string;
@@ -214,7 +219,21 @@ export const IMPORT_OPTIONS_AND_DESCRIPTIONS: {
     description:
       'Merge the current API spec with the new API spec - experimental',
   },
+  {
+    option: ImportOption.MERGE_V2,
+    description:
+      'Smart merge - only update sections where API contract changed (merge_v2)',
+  },
 ];
+
+export function createDescriptionMergeStrategyOption(): Option {
+  return new Option(
+    '--description-merge-strategy <strategy>',
+    'For merge_v2: keep_new (prefer new spec descriptions) or keep_old (preserve existing)'
+  )
+    .choices([...DESCRIPTION_MERGE_STRATEGIES])
+    .default('keep_new');
+}
 
 export function getImportOption(
   options: { importType: ImportOption | undefined },

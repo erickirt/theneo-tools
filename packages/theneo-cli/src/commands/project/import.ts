@@ -9,6 +9,7 @@ import {
   getShouldPublish,
 } from '../../core/cli/project/project';
 import {
+  createDescriptionMergeStrategyOption,
   createFileOption,
   createImportTypeOption,
   createLinkOption,
@@ -30,6 +31,31 @@ import {
 import { confirm } from '@inquirer/prompts';
 import { isInteractiveFlow } from '../../utils';
 import { createNewProjectVersion } from '../../core/cli/version/create';
+
+const MERGE_V2_IMPORT_OPTION = 'merge_v2';
+const SPINNER_MESSAGE_MERGE_V2 =
+  'Updating documentation (merge_v2 smart merge)...';
+
+function isMergeV2Import(importOption: ImportOption): boolean {
+  return String(importOption) === MERGE_V2_IMPORT_OPTION;
+}
+
+function getImportSpinnerText(
+  options: ImportCommandOptions,
+  importOption: ImportOption
+): string {
+  if (isMergeV2Import(importOption)) {
+    return SPINNER_MESSAGE_MERGE_V2;
+  }
+  const importSource = options.file
+    ? `file ${chalk.cyan(options.file)}`
+    : options.link
+      ? `link ${chalk.cyan(options.link)}`
+      : 'Postman collection';
+  return options.tab
+    ? `Importing ${importSource} to tab ${chalk.cyan(options.tab)}...`
+    : `Importing ${importSource}...`;
+}
 
 function handleProjectImportError(
   spinner: Spinner,
@@ -140,6 +166,17 @@ async function getImportOptionAdditionalData(
   options: ImportCommandOptions,
   isInteractive: boolean
 ): Promise<ImportOptionAdditionalData | undefined> {
+  if (importOption === ImportOption.MERGE_V2) {
+    const strategy =
+      options.descriptionMergeStrategy === 'keep_old'
+        ? MergingStrategy.KEEP_OLD
+        : MergingStrategy.KEEP_NEW;
+    return {
+      parameterDescriptionMergeStrategy: strategy,
+      sectionDescriptionMergeStrategy: strategy,
+    };
+  }
+
   if (isInteractive && importOption === ImportOption.MERGE) {
     if (options.keepOldParameterDescription === undefined) {
       options.keepOldParameterDescription = await confirm({
@@ -149,7 +186,7 @@ async function getImportOptionAdditionalData(
 
     if (options.keepOldSectionDescription === undefined) {
       options.keepOldSectionDescription = await confirm({
-        message: 'Keep old parameter descriptions?',
+        message: 'Keep old section descriptions?',
       });
     }
   }
@@ -217,18 +254,6 @@ function validateDescriptionGenerationOption(
   }
 }
 
-function buildSpinnerText(options: ImportCommandOptions): string {
-  const importSource = options.file
-    ? `file ${chalk.cyan(options.file)}`
-    : options.link
-      ? `link ${chalk.cyan(options.link)}`
-      : 'Postman collection';
-
-  return options.tab
-    ? `Importing ${importSource} to tab ${chalk.cyan(options.tab)}...`
-    : `Importing ${importSource}...`;
-}
-
 function createProgressUpdateHandler(
   generateDescription: DescriptionGenerationType,
   spinner: Spinner
@@ -275,6 +300,7 @@ Note: Published document link has this pattern: https://app.theneo.io/<workspace
     .addOption(getPostmanApiKeyOption())
     .addOption(getPostmanCollectionsOption())
     .addOption(createImportTypeOption())
+    .addOption(createDescriptionMergeStrategyOption())
     .option('--publish', 'Automatically publish the project', false)
     .option(
       '--workspace <workspace-slug>',
@@ -326,7 +352,6 @@ Note: Published document link has this pattern: https://app.theneo.io/<workspace
           projectVersion,
           projectVersionSlug
         );
-
         await validateAndGetImportSource(options);
 
         const importOption: ImportOption = await getImportOption(
@@ -352,10 +377,10 @@ Note: Published document link has this pattern: https://app.theneo.io/<workspace
         );
         const shouldPublish = await getShouldPublish(options, isInteractive);
 
-        const spinnerText = buildSpinnerText(options);
-        const spinner = createSpinner(spinnerText).start();
+        const spinner = createSpinner(
+          getImportSpinnerText(options, importOption)
+        ).start();
 
-        // If AI generation is requested, pre-set spinner text
         if (generateDescription !== DescriptionGenerationType.NO_GENERATION) {
           spinner.update({ text: 'Generating descriptions' });
         }

@@ -22,6 +22,25 @@ import {
   getAllFilesFromDirectory,
   getFilePath,
 } from 'theneo/utils/file';
+import type { ImportOptionAdditionalData } from '../../schema/project';
+
+function usesMergeWithAdditionalData(
+  option: ImportProjectOptions['importOption']
+): boolean {
+  return option === ImportOption.MERGE || option === ImportOption.MERGE_V2;
+}
+
+function withDefaultMergeStrategies(
+  data?: ImportOptionAdditionalData
+): ImportOptionAdditionalData {
+  return {
+    ...data,
+    parameterDescriptionMergeStrategy:
+      data?.parameterDescriptionMergeStrategy ?? MergingStrategy.KEEP_NEW,
+    sectionDescriptionMergeStrategy:
+      data?.sectionDescriptionMergeStrategy ?? MergingStrategy.KEEP_NEW,
+  };
+}
 
 export function importProjectFromDirectory(
   baseUrl: string,
@@ -87,23 +106,10 @@ export function importProject(
   importInput.tabSlug = options.tabSlug;
   importInput.descriptionGenerationType = options.descriptionGenerationType;
 
-  if (options.importOption == ImportOption.MERGE) {
-    importInput.importOptionAdditionalData = options.importOptionAdditionalData;
-    if (!importInput.importOptionAdditionalData) {
-      importInput.importOptionAdditionalData = {};
-    }
-    if (
-      !importInput.importOptionAdditionalData.parameterDescriptionMergeStrategy
-    ) {
-      importInput.importOptionAdditionalData.parameterDescriptionMergeStrategy =
-        MergingStrategy.KEEP_NEW;
-    }
-    if (
-      !importInput.importOptionAdditionalData.sectionDescriptionMergeStrategy
-    ) {
-      importInput.importOptionAdditionalData.sectionDescriptionMergeStrategy =
-        MergingStrategy.KEEP_NEW;
-    }
+  if (usesMergeWithAdditionalData(options.importOption)) {
+    importInput.importOptionAdditionalData = withDefaultMergeStrategies(
+      options.importOptionAdditionalData
+    );
   }
 
   return callImportProjectApi(
